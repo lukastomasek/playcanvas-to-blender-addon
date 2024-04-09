@@ -1,2 +1,4 @@
-# playcanvas-to-blender-addon
-Playcanvas to Blender Addon for recreating scenes and high quality rendering
+# Playcanvas Scene Convertor
+---
+- Use JSON file to recreate playcanvas scene inside blender
+- Render high quality images 
