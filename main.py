@@ -2,13 +2,14 @@ import bpy
 import json
 import urllib.request
 import os
-import time
 from pathlib import Path
+from mathutils import Vector
+from mathutils import Euler
 
 # Addon Info
 bl_info = {
   "name": "Playcanvas Scene Convertor",
-  "description": "Playcanvas to Blender Addon for recreating scenes and high quality rendering",
+  "description": "Playcanvas scene convertor addon for recreating scenes and high quality rendering",
   "author": "Lukas Tomasek",
   "version": (0, 1),
   "blender": (4, 0, 0),
@@ -16,10 +17,8 @@ bl_info = {
   "category": "Scene"
 }
 
-
 LOCAL_MODEL_URL = ""
 JSON_ID_NAME = "custom.load_json"
-
 
 #####
 # UTILITY CLASSES
@@ -28,21 +27,50 @@ JSON_ID_NAME = "custom.load_json"
 class RenderEngine():
   def render(self):
     bpy.context.scene.render.engine = "CYCLES"
-    output_path = str(Path.home() /  "Downloads")
+    output_path = str(Path.home() / "Downloads")
     bpy.ops.render.render('INVOKE_DEFAULT', animation=False, write_still=True)
 
 
+class PCMathUtils():
+    def create_vector(self, vec):
+        x = float(vec["x"])
+        y = float(vec["y"])
+        z = float (vec["z"])
+        return Vector((x, -z, y))
+
+    def create_euler(self, euler, mode="XYZ"):
+        x = float(euler["x"])
+        y = float(euler["y"])
+        z = float(euler["z"])
+        return Euler((x, -y, z), mode)
+
+
 class Loader():
+  pc_utils = PCMathUtils()
   def load_glb_from_url(self, url=LOCAL_MODEL_URL, is_local_path=False):
     if is_local_path:
        bpy.ops.import_scene.gltf(filepath=url)
     else:
-      local_path = str(Path.home() /  "Downloads/temp.glb")
+      local_path = str(Path.home() / "Downloads/temp.glb")
       filepath = bpy.path.abspath(local_path)
       urllib.request.urlretrieve(url, filepath)
       bpy.ops.import_scene.gltf(filepath=filepath, filter_glob='*.glb', import_pack_images=True)
       os.remove(local_path)
 
+  def load_furniture(self, data):
+      items = data["items"]
+      for index, item in enumerate(items):
+          product = item["product"]
+          position = item["position"]
+          rotation = item["rotation"]
+          download_url = product["model"]["originUrl"]
+          self.load_glb_from_url(url=download_url)
+          object = bpy.context.object
+          position_vec = self.pc_utils.create_vector(position)
+          object.location = position_vec
+          rotation_euler = self.pc_utils.create_euler(rotation)
+          object.rotation_mode = 'XYZ'
+         # object.rotation_euler = rotation_euler
 #####
 # INTERFACE
 ####
@@ -88,6 +116,7 @@ class LoadJSON(bpy.types.Operator):
         data = json.load(file)
         floor_plan_url = data["floor_plan"]
         self.loader.load_glb_from_url(floor_plan_url, is_local_path=False)
+        self.loader.load_furniture(data)
     else:
       self.report({'WARNING'}, "No JSON file selected")
 
@@ -106,7 +135,6 @@ def register():
   bpy.utils.register_class(Panel)
   bpy.utils.register_class(LoadJSON)
   bpy.utils.register_class(RenderScene)
-
 
 def unregister():
   bpy.utils.unregister_class(Panel)
