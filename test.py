@@ -1,4 +1,5 @@
 import json
+import math
 def load_furniture():
     print("test")
     with open("/Users/lukastomasek/Desktop/projects/pc-to-blender-addon/playcanvas-scene.json") as file:
@@ -9,7 +10,10 @@ def load_furniture():
             rotation = item["rotation"]
             product = item["product"]
             title = product["title"]
+            #print(rotation)
+            euler = [math.radians(float(rotation[axis])) for axis in ['z', 'x', 'y']]
+            blender_euler = [math.radians(float(rotation[axis])) for axis in ['z', 'x', 'y']]
             print(rotation)
-            print(float(rotation["x"]), float(rotation["y"]), float(rotation["z"]))
+            print(blender_euler)
 
 load_furniture()

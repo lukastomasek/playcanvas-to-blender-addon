@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 from mathutils import Vector
 from mathutils import Euler
+import math
 
 # Addon Info
 bl_info = {
@@ -38,11 +39,11 @@ class PCMathUtils():
         z = float (vec["z"])
         return Vector((x, -z, y))
 
-    def create_euler(self, euler, mode="XYZ"):
-        x = float(euler["x"])
-        y = float(euler["y"])
-        z = float(euler["z"])
-        return Euler((x, -y, z), mode)
+    def create_euler(self, rotation):
+        x = math.radians(float(rotation["x"]))
+        y = math.radians(float(rotation["y"]))
+        z = math.radians(float(rotation["z"]))
+        return Euler((x, z, y))
 
 
 class Loader():
@@ -68,9 +69,9 @@ class Loader():
           object = bpy.context.object
           position_vec = self.pc_utils.create_vector(position)
           object.location = position_vec
-          rotation_euler = self.pc_utils.create_euler(rotation)
-          object.rotation_mode = 'XYZ'
-         # object.rotation_euler = rotation_euler
+          object.rotation_mode = "XZY"
+          blender_euler = self.pc_utils.create_euler(rotation)
+          object.rotation_euler = blender_euler
 #####
 # INTERFACE
 ####
