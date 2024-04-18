@@ -61,13 +61,15 @@ class Loader():
       items = data["items"]
       for index, item in enumerate(items):
           product = item["product"]
+          positioning = product["positioning"]
           position = item["position"]
           rotation = item["rotation"]
           download_url = product["model"]["originUrl"]
           self.load_glb_from_url(url=download_url)
           object = bpy.context.object
-          # todo: fix objects floating
           position_vec = self.pc_utils.create_vector(position)
+          if positioning == "FLOOR":
+              position_vec.z = 0
           object.location = position_vec
           object.rotation_mode = "XZY"
           blender_euler = self.pc_utils.create_euler(rotation)
