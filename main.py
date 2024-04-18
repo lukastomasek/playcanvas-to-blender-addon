@@ -1,13 +1,12 @@
 import bpy
 import json
-import urllib.request
+import math
 import os
+import urllib.request
 from pathlib import Path
 from mathutils import Vector
 from mathutils import Euler
-import math
 
-# Addon Info
 bl_info = {
   "name": "Playcanvas Scene Convertor",
   "description": "Playcanvas scene convertor addon for recreating scenes and high quality rendering",
@@ -36,7 +35,7 @@ class PCMathUtils():
     def create_vector(self, vec):
         x = float(vec["x"])
         y = float(vec["y"])
-        z = float (vec["z"])
+        z = float(vec["z"])
         return Vector((x, -z, y))
 
     def create_euler(self, rotation):
@@ -67,6 +66,7 @@ class Loader():
           download_url = product["model"]["originUrl"]
           self.load_glb_from_url(url=download_url)
           object = bpy.context.object
+          # todo: fix objects floating
           position_vec = self.pc_utils.create_vector(position)
           object.location = position_vec
           object.rotation_mode = "XZY"
@@ -119,7 +119,7 @@ class LoadJSON(bpy.types.Operator):
         self.loader.load_glb_from_url(floor_plan_url, is_local_path=False)
         self.loader.load_furniture(data)
     else:
-      self.report({'WARNING'}, "No JSON file selected")
+        self.report({'WARNING'}, "No JSON file selected")
 
     return {'FINISHED'}
 
